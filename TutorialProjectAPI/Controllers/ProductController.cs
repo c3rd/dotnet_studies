@@ -34,5 +34,27 @@ namespace TutorialProjectAPI.Controllers
 
             return Ok(product);
         }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<ProductDTO> CreateProduct([FromBody]ProductDTO productDTO)
+        {
+            if (productDTO == null)
+            {
+                return BadRequest();
+            }
+
+            if (productDTO.Id > 0)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            productDTO.Id = ProductStore.productList.OrderByDescending(obj => obj.Id).FirstOrDefault().Id + 1;
+            ProductStore.productList.Add(productDTO);
+
+            return StatusCode(StatusCodes.Status201Created);
+        }
     }
 }
