@@ -6,7 +6,7 @@ namespace TutorialProjectAPI.Data
     {
         public static List<ProductDTO> productList = new List<ProductDTO> {
                 new ProductDTO { Id = 1, Name = "Produto 1", Price = 50.00 },
-                new ProductDTO { Id = 2, Name = "Produto 1", Price = 50.00 }
+                new ProductDTO { Id = 2, Name = "Produto 2", Price = 50.00 }
             };
     }
 }
