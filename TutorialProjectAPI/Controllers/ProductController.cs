@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 using TutorialProjectAPI.Data;
 using TutorialProjectAPI.Models.Dto;
 
@@ -15,7 +16,7 @@ namespace TutorialProjectAPI.Controllers
             return Ok(ProductStore.productList);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}", Name = "GetProduct")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -39,8 +40,12 @@ namespace TutorialProjectAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<ProductDTO> CreateProduct([FromBody]ProductDTO productDTO)
+        public ActionResult<ProductDTO> CreateProduct([FromBody] ProductDTO productDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             if (productDTO == null)
             {
                 return BadRequest();
@@ -54,7 +59,66 @@ namespace TutorialProjectAPI.Controllers
             productDTO.Id = ProductStore.productList.OrderByDescending(obj => obj.Id).FirstOrDefault().Id + 1;
             ProductStore.productList.Add(productDTO);
 
-            return StatusCode(StatusCodes.Status201Created);
+            return CreatedAtRoute("GetProduct", new { id = productDTO.Id }, productDTO);
         }
+
+        [HttpDelete("{id:int}", Name = "DeleteProduct")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult DeleteProduct(int id)
+        {
+            if (id == 0)
+            {
+                return BadRequest();
+            }
+
+            var product = ProductStore.productList.FirstOrDefault(obj => obj.Id == id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            ProductStore.productList.Remove(product);
+            return NoContent();
+        }
+
+        [HttpPut("{id:int}")]
+        public IActionResult UpdateProduct(int id, [FromBody]ProductDTO productDTO)
+        {
+            if (productDTO == null || id != productDTO.Id)
+            {
+                return BadRequest();
+            }
+
+            var product = ProductStore.productList.FirstOrDefault(obj => obj.Id == id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            product.Name = productDTO.Name;
+            product.Price = productDTO.Price;
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id:int}")]
+        public IActionResult UpdateParcialProduct(int id, JsonPatchDocument<ProductDTO> patchDTO)
+        {
+            if (patchDTO == null || id == 0)
+            {
+                return BadRequest();
+            }
+            var product = ProductStore.productList.FirstOrDefault(obj => obj.Id == id);
+
+            if (product == null) { return NotFound(); }
+
+            patchDTO.ApplyTo(product, ModelState);
+
+            if (!ModelState.IsValid) { return  BadRequest(ModelState); }
+
+            return NoContent();
+        }
+
     }
 }
