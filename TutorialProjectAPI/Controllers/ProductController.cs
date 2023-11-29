@@ -9,10 +9,18 @@ namespace TutorialProjectAPI.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
+        
+        private readonly ILogger<ProductController> _logger;
+
+        public ProductController(ILogger<ProductController> logger) {
+            _logger = logger;
+        }
+
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ProductDTO>> GetProducts()
         {
+            _logger.LogInformation("Retrieving all products ae");
             return Ok(ProductStore.productList);
         }
 
