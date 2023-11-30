@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TutorialProjectAPI.Data;
 using TutorialProjectAPI.Models.Dto;
+using System;
 
 namespace TutorialProjectAPI.Controllers
 {
@@ -20,6 +21,7 @@ namespace TutorialProjectAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ProductDTO>> GetProducts()
         {
+            Console.WriteLine("teste");
             _logger.LogInformation("Retrieving all products ae");
             return Ok(ProductStore.productList);
         }
